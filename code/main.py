@@ -164,8 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
         tablerules = self.cursor.execute('SELECT * FROM tablerules ORDER BY _id')
         allrules = {} # the data of the rules sorted by _id
         for r in tablerules:
-            d = r[-1].split(', ')
-
+            d = r[-1].split(', ') # get data
             data = {
                 '_name': r[1],
                 '_form': d[0],
@@ -174,7 +173,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 '_after': d[3],
                 '_change': d[4]
             }
-
             node = md.Node(
                 {'_data':data, '_name': data['_name']},
                 self.all_rules[r[3]],
@@ -182,17 +180,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 1
             )
             self.all_rules[r[3]].addChild(node)
-            print(data)
-            allrules[r[0]] = data
+            allrules[r[0]] = data # set this for later reference, line 187
 
         cellrules = self.cursor.execute('SELECT * FROM cellrules ORDER BY _id')
         for r in cellrules:
             data = allrules[r[1]]
-            cell = tuple(int(x) for x in r[-1].split(', '))
-
-            if cell not in self.table_rule_models[r[3]]:
+            cell = tuple(int(x) for x in r[-1].split(', ')) # coordinates of the cell
+            if cell not in self.table_rule_models[r[3]]: # add a model, if there is none yet
                 self.table_rule_models[r[3]][cell] = md.Tree()
-
             node = md.Node(
                 {'_data':data, '_name': data['_name']},
                 self.table_rule_models[r[3]][cell],
