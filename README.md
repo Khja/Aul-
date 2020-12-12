@@ -13,7 +13,7 @@ Features:
 The software will be ready soon.
 
 ## Project objectives
-The main goal is to create a not-to-hard-to-use program intended to document morphology, notes on the usage, and vocabulary of a conlang. The software will very unlikely include:
+The main goal is to create a relatively user-friendly program intended to document morphology, notes on the usage, and vocabulary of a conlang. The software will very unlikely include:
 - phonetic transcription generation;
 - conscript support and romanisation;
 - media (audios, images, videos, etc.) support.
