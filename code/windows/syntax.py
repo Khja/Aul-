@@ -5,6 +5,8 @@ import model as md
 import undo as ud
 import const
 
+# Why does this even exist?
+
 class Edit(const.EditDialog):
     def __init__(self, main, node):
         super().__init__(main, node)
