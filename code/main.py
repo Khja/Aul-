@@ -85,19 +85,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cursor.execute('CREATE TABLE tree (_id integer, _parent integer, _name text, _type text, _notes text, _genders text, _template text)')
         self.cursor.execute('CREATE TABLE templates (_id integer, _name text, _rows text, _columns text, _notes text)')
         self.cursor.execute('CREATE TABLE dictionary (_id INT PRIMARY KEY, _word text, _meaning text, _class text, _gender text, _notes text)')
+        self.cursor.execute('CREATE TABLE rules (_id integer, _name text, _parent integer, _table integer, _type text, _data text)')
 
     def open_file(self, filename):
         self.conn = sqlite3.connect(filename)
         self.cursor = self.conn.cursor()
         self.filename = filename
-        #self.cursor.execute('DROP TABLE dictionary')
-        #self.cursor.execute('CREATE TABLE dictionary (_id INT PRIMARY KEY, _word text, _meaning text, _class text, _gender text, _notes text)')
-
+        #self.cursor.execute('DROP TABLE tablerules')
+        #self.cursor.execute('CREATE TABLE tablerules (_id integer, _name text, _parent integer, _table text, _type text, _data text)')
+        #self.cursor.execute('CREATE TABLE cellrules (_id integer, _name text, _parent integer, _table text, _type text, _data text)')
 
     def load_file(self, filename):
         self.open_file(filename)
         self.treeLoad()
         self.dictLoad()
+        self.rulesLoad()
 
     def dictLoad(self):
         words = self.cursor.execute('SELECT * FROM dictionary ORDER BY _word')
@@ -156,6 +158,29 @@ class MainWindow(QtWidgets.QMainWindow):
             added_nodes[_parent].addChild(new) # The node at _parent position in the dict is the parent
             added_nodes[_id] = new # Add the node to the added_nodes dict for future reference
             new.last_id[0] = new.last_id[0] + 1
+
+    def rulesLoad(self):
+        rules = self.cursor.execute('SELECT * FROM tablerules ORDER BY _id')
+        for r in rules:
+            d = r[-1].split(', ')
+
+            data = {
+                '_name': r[1],
+                '_form': d[0],
+                '_before': d[1],
+                '_what': d[2],
+                '_after': d[3],
+                '_change': d[4]
+            }
+
+            node = md.Node(
+                {'_data':data, '_name': data['_name']},
+                self.all_rules[r[3]],
+                None,
+                1
+            )
+            self.all_rules[r[3]].addChild(node)
+            print(data)
 
     # @QtCore.Slot()
     # Using this provokes a bug, I don't know how to solve

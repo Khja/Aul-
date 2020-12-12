@@ -187,11 +187,22 @@ class ChooseRule(QtWidgets.QDialog):
 
         self.ui.show()
 
-    def addToModel(self, rule):
-        if rule != False:
-            self.model.addChild(rule)
+    def addToModel(self, node):
+        if node != False:
+            self.model.addChild(node)
             self.model.layoutChanged.emit()
-            print(rule)
+            self.parent.main.cursor.execute(
+                'INSERT INTO tablerules (_id, _name, _parent, _table, _type, _data) VALUES (?, ?, ?, ?, ?, ?)',
+                (
+                    node._id,
+                    node._name,
+                    node._parent._id,
+                    self.parent.node._name,
+                    'rule',
+                    f"{node._data['_form']}, {node._data['_before']}, {node._data['_what']}, {node._data['_after']}, {node._data['_change']}",
+                )
+            )
+            print(node)
 
     def new(self):
         self.n = NewRule(self, self.main)
