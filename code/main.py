@@ -85,7 +85,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cursor.execute('CREATE TABLE tree (_id integer, _parent integer, _name text, _type text, _notes text, _genders text, _template text)')
         self.cursor.execute('CREATE TABLE templates (_id integer, _name text, _rows text, _columns text, _notes text)')
         self.cursor.execute('CREATE TABLE dictionary (_id INT PRIMARY KEY, _word text, _meaning text, _class text, _gender text, _notes text)')
-        self.cursor.execute('CREATE TABLE rules (_id integer, _name text, _parent integer, _table integer, _type text, _data text)')
+        self.cursor.execute('CREATE TABLE tablerules (_id integer, _name text, _parent integer, _table text, _type text, _data text)')
+        self.cursor.execute('CREATE TABLE cellrules (_id integer, _name text, _parent integer, _table text, _type text)')
 
     def open_file(self, filename):
         self.conn = sqlite3.connect(filename)
