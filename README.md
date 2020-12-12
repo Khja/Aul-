@@ -9,4 +9,4 @@ Features:
 - organise your tables in a tree-based system with folders;
 - add words to the dictionary.
 
-The software will be available soon.
+The software will be ready soon.
