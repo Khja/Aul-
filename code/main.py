@@ -86,15 +86,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cursor.execute('CREATE TABLE templates (_id integer, _name text, _rows text, _columns text, _notes text)')
         self.cursor.execute('CREATE TABLE dictionary (_id INT PRIMARY KEY, _word text, _meaning text, _class text, _gender text, _notes text)')
         self.cursor.execute('CREATE TABLE tablerules (_id integer, _name text, _parent integer, _table text, _type text, _data text)')
-        self.cursor.execute('CREATE TABLE cellrules (_id integer, _name text, _parent integer, _table text, _type text)')
+        self.cursor.execute('CREATE TABLE cellrules (_id integer, _tableid integer, _parent integer, _table text, _type text, _cell text)')
 
     def open_file(self, filename):
         self.conn = sqlite3.connect(filename)
         self.cursor = self.conn.cursor()
         self.filename = filename
-        #self.cursor.execute('DROP TABLE tablerules')
+        #self.cursor.execute('DROP TABLE cellrules')
         #self.cursor.execute('CREATE TABLE tablerules (_id integer, _name text, _parent integer, _table text, _type text, _data text)')
-        #self.cursor.execute('CREATE TABLE cellrules (_id integer, _name text, _parent integer, _table text, _type text, _data text)')
+        #self.cursor.execute('CREATE TABLE cellrules (_id integer, _tableid integer, _parent integer, _table text, _type text, _cell text)')
 
     def load_file(self, filename):
         self.open_file(filename)
@@ -161,8 +161,9 @@ class MainWindow(QtWidgets.QMainWindow):
             new.last_id[0] = new.last_id[0] + 1
 
     def rulesLoad(self):
-        rules = self.cursor.execute('SELECT * FROM tablerules ORDER BY _id')
-        for r in rules:
+        tablerules = self.cursor.execute('SELECT * FROM tablerules ORDER BY _id')
+        allrules = {} # the data of the rules sorted by _id
+        for r in tablerules:
             d = r[-1].split(', ')
 
             data = {
@@ -182,6 +183,23 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             self.all_rules[r[3]].addChild(node)
             print(data)
+            allrules[r[0]] = data
+
+        cellrules = self.cursor.execute('SELECT * FROM cellrules ORDER BY _id')
+        for r in cellrules:
+            data = allrules[r[1]]
+            cell = tuple(int(x) for x in r[-1].split(', '))
+
+            if cell not in self.table_rule_models[r[3]]:
+                self.table_rule_models[r[3]][cell] = md.Tree()
+
+            node = md.Node(
+                {'_data':data, '_name': data['_name']},
+                self.table_rule_models[r[3]][cell],
+                None,
+                1
+            )
+            self.table_rule_models[r[3]][cell].addChild(node)
 
     # @QtCore.Slot()
     # Using this provokes a bug, I don't know how to solve

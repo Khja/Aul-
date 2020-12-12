@@ -117,16 +117,30 @@ class Edit(const.EditDialog):
         self.choice = ChooseRule(self, self.main)
 
     def setModel(self):
+        # Makes a model if there is none yet. Do it now, so to not have to hold many tree in memory
         if self.currentCell not in self.tree:
-            self.tree[self.currentCell] = md.Tree() # add a treemodel if there isn't one yet; do it now, so to not have to hold many tree in memory
+            self.tree[self.currentCell] = md.Tree()
             self.ui.treeView.setModel(self.tree[self.currentCell]) # connect tree to display it
 
     def add(self, data):
         if data != None:
             self.setModel()
+            # Add rule node to current cell tree
             node = md.Node(data, self.tree[self.currentCell], None, 1)
             self.tree[self.currentCell].addChild(node)
             self.main.table_rule_models[self.node._name] = self.tree
+            # Save data
+            self.main.cursor.execute(
+                'INSERT INTO cellrules (_id, _tableid, _parent, _table, _type, _cell) VALUES (?, ?, ?, ?, ?, ?)',
+                (
+                    node._id,
+                    data['_id'],
+                    node._parent._id,
+                    self.node._name,
+                    'rule',
+                    f'{self.currentCell[0]}, {self.currentCell[1]}'
+                )
+            )
 
     def generate(self):
         word = self.ui.example.text()
@@ -212,7 +226,7 @@ class ChooseRule(QtWidgets.QDialog):
         if len(selected) > 0: # If there is a selection in the tree
             selection = selected[0] # The index of the selected node in tree
             node = selection.internalPointer() # get node object
-            data = {'_data': node._data, '_name': node._name} # transfer data to new dict
+            data = {'_data': node._data, '_name': node._name, '_id':node._id} # transfer data to new dict
             self.parent.add(data)
 
     def delete(self):
