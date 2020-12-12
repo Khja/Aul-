@@ -26,25 +26,25 @@ def change(form, before, what, after, mutation, word, abbr={}):
 # Changes 'ts' to 'ps' when after a vowel and an 'm', if there is another vowel afterwards.
 # namtsen > nampsen
 
-vowel = r'[aeiou]'
-consonant = r'[qwrtpsdfghjklxczvbnm]'
+# vowel = r'[aeiou]'
+# consonant = r'[qwrtpsdfghjklxczvbnm]'
 
-abbr = {'[V]':vowel, '[C]':consonant}
+# abbr = {'[V]':vowel, '[C]':consonant}
 
-form = r""
-before = r"[V]m"
-after = r"[V]"
-what = r"ts"
-to = r"ps"
+# form = r""
+# before = r"[V]m"
+# after = r"[V]"
+# what = r"ts"
+# to = r"ps"
 
-s = change(form, before, what, after, to, 'namtsen', abbr)
-print(s)
+# s = change(form, before, what, after, to, 'namtsen', abbr)
+# print(s)
 
-s0 = change("", "", " ", "", "e", ' hepo')
-print(s0)
-s1 = change("", r"\b", "ehe", "", "hee", s0)
-print(s1)
-s2 = change("", r"", "ee", "", "ei", s1)
-print(s2)
-s3 = change('', r'', r'$', r"", 'men', s2)
-print(s3)
+# s0 = change("", "", " ", "", "e", ' hepo')
+# print(s0)
+# s1 = change("", r"\b", "ehe", "", "hee", s0)
+# print(s1)
+# s2 = change("", r"", "ee", "", "ei", s1)
+# print(s2)
+# s3 = change('', r'', r'$', r"", 'men', s2)
+# print(s3)
