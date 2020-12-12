@@ -1,5 +1,5 @@
-## Aulë
-# Current status
+# Aulë
+## Current status
 Software for documenting conlangs, particularly their morphology. It's still under construction.
 Features:
 - make tables for declension or conjugation generation;
@@ -12,7 +12,7 @@ Features:
 
 The software will be ready soon.
 
-# Project objectives
+## Project objectives
 The main goal is to create a not-to-hard-to-use program intended to document morphology, notes on the usage, and vocabulary of a conlang. The software will very unlikely include:
 - phonetic transcription generation;
 - conscript support and romanisation;
