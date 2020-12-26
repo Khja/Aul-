@@ -1,2 +1,2 @@
 # Aulë
-Software for documenting conlangs, particularly their morphology. It's still under construction.
+Software for documenting conlangs, particularly for morphology.
