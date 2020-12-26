@@ -6,29 +6,29 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>448</width>
-    <height>356</height>
+    <width>387</width>
+    <height>135</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Rules</string>
+   <string>Edit Symbol</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="1">
-    <widget class="QPushButton" name="deleteBtn">
-     <property name="text">
-      <string>Delete</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
-    <widget class="QPushButton" name="addBtn">
+    <widget class="QLabel" name="symbolLbl">
      <property name="text">
-      <string>Add</string>
+      <string>Symbol:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="2" column="0">
+    <widget class="QLabel" name="regexLbl">
+     <property name="text">
+      <string>Regex:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -38,8 +38,21 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0" colspan="2">
-    <widget class="QListView" name="listView"/>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="symbolLine"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="regexLine"/>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="nameLine"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="nameLbl">
+     <property name="text">
+      <string>Name:</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

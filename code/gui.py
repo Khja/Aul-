@@ -1,0 +1,265 @@
+from PySide2 import QtWidgets, QtCore, QtGui, QtUiTools
+import model as md
+import data as dt
+import master as ms
+
+def loadUi(filename, parent=None):
+    loader = QtUiTools.QUiLoader()
+    ui = loader.load(filename, parent)
+    return ui
+
+class EditDialog(QtWidgets.QDialog):
+    def setup(self, filename, main_window, node=None):
+        super(EditDialog, self).__init__()
+        self.ui = loadUi(filename, self)
+        self.main = main_window
+        self.ui.buttonBox.accepted.connect(self.done)
+        self.ui.show()
+        if node != None:
+            self.ui.nameLine.setText(node._name)
+
+    def done(self):
+        pass
+
+    def getData(self, attribute, node):
+        if attribute in node._data:
+            return node._data[attribute]
+        return ''
+
+class TableDialog(EditDialog):
+    def setup(self, filename, main_window, node=None):
+        super().setup(filename, main_window, node)
+        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+    def setHeaders(self, dimensions):
+        rows, columns = dimensions
+        rowDelta = len(rows) - self.ui.tableWidget.rowCount()
+        columnDelta = len(columns) - self.ui.tableWidget.columnCount()
+        if rowDelta > 0: # if there are more rows in rowLine
+            for i in range(rowDelta):
+                self.ui.tableWidget.insertRow(0)
+        elif rowDelta < 0: # if there are less rows in rowLine
+            for i in range(0 - rowDelta):
+                self.ui.tableWidget.removeRow(0)
+        if columnDelta > 0: # if there are more columns in columnLine
+            for i in range(columnDelta):
+                self.ui.tableWidget.insertColumn(0)
+        elif columnDelta < 0: # if there are less columns in columnLine
+            for i in range(0 - columnDelta):
+                self.ui.tableWidget.removeColumn(0)
+        self.ui.tableWidget.clear() # reset header names
+        self.ui.tableWidget.setHorizontalHeaderLabels(columns)
+        self.ui.tableWidget.setVerticalHeaderLabels(rows)
+
+class AddDialog(EditDialog):
+    def __init__(self, types, main_window):
+        self.setup('ui/add.ui', main_window)
+        self.ui.typeCombo.insertItem(0, types)
+
+    def done(self):
+        name, obj_type = self.ui.nameLine.text(), self.ui.typeCombo.currentText()
+        self.main.addAction(name, obj_type)
+
+class Folder(EditDialog):
+    def __init__(self, main_window, node):
+        self.setup('ui/add.ui', main_window, node)
+        self.ui.typeCombo.hide()
+        self.ui.typeLbl.hide()
+        self.ui.setWindowTitle('Edit')
+
+    def done(self):
+        name = self.ui.nameLine.text()
+        self.main.editAction({}, name)
+
+class Note(EditDialog):
+    def __init__(self, main_window, node):
+        self.setup('ui/note.ui', main_window, node)
+        if '_text' in node._data:
+            self.ui.textEdit.setHtml(node._data['_text'])
+
+    def done(self):
+        text = self.ui.textEdit.toHtml()
+        name = self.ui.nameLine.text()
+        self.main.editAction({'_text': text}, name)
+
+class Table(TableDialog):
+    def __init__(self, main_window, node):
+        self.setup('ui/table.ui', main_window, node)
+        self.ui.selectBtn.clicked.connect(self.selectTemplate)
+        self.dimensions = self.getDimensions(node)
+        self.template = self.getData('_template', node)
+        self.setTable()
+
+    def done(self):
+        name = self.ui.nameLine.text()
+        rows = ', '.join(self.dimensions[0])
+        columns = ', '.join(self.dimensions[1])
+        self.main.editAction({'_rows':rows, '_columns':columns, '_template':self.template}, name)
+
+    def selectTemplate(self):
+        self.selectWindow = SelectTemplate(self.main, self)
+
+    def selected(self, index):
+        if index != None:
+            node = index.internalPointer()
+            self.dimensions = self.getDimensions(node)
+            self.template = node._name
+            self.setTable()
+
+    def getDimensions(self, node):
+        data = []
+        for d in ('_rows', '_columns'):
+            if d in node._data:
+                l = node._data[d].split(', ')
+                data.append(l)
+            else:
+                data.append([])
+        return tuple(data)
+
+    def setTable(self):
+        self.setHeaders(self.dimensions)
+        self.ui.currentLbl.setText(self.template)
+
+class SelectTemplate(EditDialog):
+    def __init__(self, main_window, table_window):
+        self.setup('ui/selecttemplate.ui', main_window)
+        self.tableDialog = table_window
+        self.model = self.main._master._temp
+        self.ui.treeView.setModel(self.model)
+
+    def done(self):
+        selection = self.ui.treeView.selectionModel().selectedRows()
+        if len(selection) > 0:
+            index = selection[0]
+        else:
+            index = None
+        self.tableDialog.selected(index)
+
+class Template(TableDialog):
+    def __init__(self, main_window, node):
+        self.setup('ui/template.ui', main_window, node)
+        self.ui.rowLine.setText(self.getData('_rows', node))
+        self.ui.columnLine.setText(self.getData('_columns', node))
+        self.setHeaders(self.dimensions())
+        self.ui.columnLine.editingFinished.connect(lambda:self.setHeaders(self.dimensions()))
+        self.ui.rowLine.editingFinished.connect(lambda:self.setHeaders(self.dimensions()))
+
+    def dimensions(self):
+        rows = self.ui.rowLine.text().split(', ')
+        columns = self.ui.columnLine.text().split(', ')
+        return (rows, columns)
+
+    def done(self):
+        name = self.ui.nameLine.text()
+        rows = self.ui.rowLine.text()
+        columns = self.ui.columnLine.text()
+        self.main.editAction({'_rows':rows, '_columns':columns}, name)
+
+class Symbol(EditDialog):
+    def __init__(self, main_window, node):
+        self.setup('ui/symbol.ui', main_window, node)
+        self.ui.symbolLine.setText(self.getData('_symbol', node))
+        self.ui.regexLine.setText(self.getData('_regex', node))
+
+    def done(self):
+        name = self.ui.nameLine.text()
+        symbol = self.ui.symbolLine.text()
+        regex = self.ui.regexLine.text()
+        self.main.editAction({'_symbol':symbol, '_regex':regex}, name)
+
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self, app):
+        super(MainWindow, self).__init__()
+        self.ui = loadUi('ui/test.ui', self)
+        self._app = app
+        self._master = ms.Master('data.test', self)
+        self.moving = []
+        for t in ('morp', 'dict', 'temp', 'symb'):
+            tree = getattr(self._master, f'_{t}')
+            model = getattr(self.ui, f'{t}TreeView')
+            model.setModel(tree)
+        self.ui.morpTreeView.doubleClicked.connect(self.move)
+        self.ui.menubar.triggered.connect(self.actionClicked) # connect action to menubar
+
+        self.ui.show()
+
+    def currentTree(self):
+        tab = self.ui.tabWidget.currentIndex()
+        return self._master.trees[tab]
+
+    def getSelection(self):
+        tree_name = self.currentTree()
+        tree = getattr(self.ui, f'{tree_name[1:]}TreeView')
+        selection = tree.selectionModel().selectedRows()
+        if len(selection) > 0:
+            return selection[0]
+        return None
+
+    def delete(self):
+        selected = self.getSelection()
+        self._master.removeChild(selected, self.currentTree())
+
+    def add(self):
+        tree = self.currentTree()
+        objects = {'_morp':'Table', '_dict':'Word', '_temp':'Template', '_symb':'Symbol', '_rule':'Rule', '_tabl':'Rule'}
+        comboItem = objects[tree]
+        self.addDialog = AddDialog(comboItem, self)
+
+    def addAction(self, name, obj_type):
+        selected = self.getSelection()
+        self._master.addChild(md.Node(name, {}), obj_type, self.currentTree(), selected)
+
+    def edit(self):
+        selected = self.getSelection()
+        if selected != None:
+            node = selected.internalPointer()
+            nodes = {'Folder':Folder, 'Note':Note, 'Table':Table, 'Template':Template, 'Symbol':Symbol}
+            if node._type in nodes:
+                self.editDialog = nodes[node._type](self, node)
+
+    def editAction(self, new_data, new_name):
+        selected = self.getSelection()
+        self._master.editData(selected, self.currentTree(), new_data, new_name)
+
+    def move(self):
+        selected = self.getSelection()
+        self.moving.append(selected)
+        if len(self.moving) > 1:
+            print(self.moving)
+            self._master._morp.moveChild(self.moving[0], self.moving[1])
+            self.moving = []
+
+    def undo(self):
+        if self._master._stack.canUndo() is True:
+            self._master._stack.undo()
+            command = self._master._stack.command(self._master._stack.index())
+            self.ui.actionLbl.setText(command._undoMessage)
+
+    def redo(self):
+        if self._master._stack.canRedo() is True:
+            command = self._master._stack.command(self._master._stack.index())
+            self.ui.actionLbl.setText(command._redoMessage)
+            self._master._stack.redo()
+
+    def save(self):
+        self._master._database.close()
+
+    def deselect(self):
+        tree = self.currentTree()
+        view = getattr(self.ui, f'{tree[1:]}TreeView')
+        selectionModel = view.selectionModel()
+        selectionModel.clear()
+
+    def actionClicked(self, action):
+        """This connects each shortcut/menbar item to its respective function"""
+        name = action.text()
+        command = getattr(self, name.lower())
+        command()
+
+if __name__ == '__main__':
+    import sys
+    Aule = QtWidgets.QApplication(sys.argv)
+    Aule.setQuitOnLastWindowClosed(False)
+    window = MainWindow(Aule)
+    sys.exit(Aule.exec_())
