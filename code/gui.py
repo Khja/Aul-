@@ -121,6 +121,15 @@ class Table(TableDialog):
         self.setHeaders(self.dimensions)
         self.ui.currentLbl.setText(self.template)
 
+    def add(self):
+        self.addDialog = AllRules(self.main, self)
+
+class AllRules(EditDialog):
+    def __init__(self, main_window, table_window):
+        self.setup('ui/allrules.ui', main_window)
+        self.tableDialog = table_window
+        self.model = self.main._master._rule
+        self.ui.treeView.setModel(self.model)
 class SelectTemplate(EditDialog):
     def __init__(self, main_window, table_window):
         self.setup('ui/selecttemplate.ui', main_window)
