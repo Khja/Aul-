@@ -107,8 +107,8 @@
       <attribute name="title">
        <string>Rules</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="1" column="0">
         <widget class="QTreeView" name="treeView"/>
        </item>
       </layout>
