@@ -191,6 +191,25 @@ class Table(Window):
         setHeaders(self.dimensions, self.ui)
         self.ui.currentLbl.setText(self.template)
 
+    def setRules(self, node):
+        model_name = f'table_{node._name}'
+        if model_name in self.main._master.table_rules: # is there a model for the table node?
+            self.ruleModel = getattr(self.main._master.table_rules, node._name) # retrieve it
+        else:
+            self.main._master.table_rules.append(model_name)
+            self.ruleModel = md.Model(self.main._master._database, model_name)
+            setattr(self.main._master, model_name, self.ruleModel)
+            if '_rows' in node._data and '_columns' in node._data:
+                rows = node._data['_rows'].split(', ')
+                for column in node._data['_columns'].split(', '):
+                    column_node = md.Node(column, {})
+                    self.ruleModel.addChild(column_node, 'Cell')
+                    for row in rows:
+                        row_node = md.Node(row, {})
+                        parent = self.ruleModel.index(column_node._row, column_node._column)
+                        self.ruleModel.addChild(row_node, 'Cell', parent)
+        self.ui.treeView.setModel(self.ruleModel) # set the model for the rules
+
     def add(self):
         self.addDialog = AllRules(self.main, self)
 
