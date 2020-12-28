@@ -26,32 +26,6 @@ class EditDialog(QtWidgets.QDialog):
             return node._data[attribute]
         return ''
 
-class TableDialog(EditDialog):
-    def setup(self, filename, main_window, node=None):
-        super().setup(filename, main_window, node)
-        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-
-    def setHeaders(self, dimensions):
-        rows, columns = dimensions
-        rowDelta = len(rows) - self.ui.tableWidget.rowCount()
-        columnDelta = len(columns) - self.ui.tableWidget.columnCount()
-        if rowDelta > 0: # if there are more rows in rowLine
-            for i in range(rowDelta):
-                self.ui.tableWidget.insertRow(0)
-        elif rowDelta < 0: # if there are less rows in rowLine
-            for i in range(0 - rowDelta):
-                self.ui.tableWidget.removeRow(0)
-        if columnDelta > 0: # if there are more columns in columnLine
-            for i in range(columnDelta):
-                self.ui.tableWidget.insertColumn(0)
-        elif columnDelta < 0: # if there are less columns in columnLine
-            for i in range(0 - columnDelta):
-                self.ui.tableWidget.removeColumn(0)
-        self.ui.tableWidget.clear() # reset header names
-        self.ui.tableWidget.setHorizontalHeaderLabels(columns)
-        self.ui.tableWidget.setVerticalHeaderLabels(rows)
-
 class AddDialog(EditDialog):
     def __init__(self, types, main_window):
         self.setup('ui/add.ui', main_window)
@@ -87,15 +61,75 @@ class Table(TableDialog):
     def __init__(self, main_window, node):
         self.setup('ui/table.ui', main_window, node)
         self.ui.selectBtn.clicked.connect(self.selectTemplate)
+def tableSetup(ui):
+    ui.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+    ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+def setHeaders(dimensions, ui):
+    rows, columns = dimensions
+    rowDelta = len(rows) - ui.tableWidget.rowCount()
+    columnDelta = len(columns) - ui.tableWidget.columnCount()
+    if rowDelta > 0: # if there are more rows in rowLine
+        for i in range(rowDelta):
+            ui.tableWidget.insertRow(0)
+    elif rowDelta < 0: # if there are less rows in rowLine
+        for i in range(0 - rowDelta):
+            ui.tableWidget.removeRow(0)
+    if columnDelta > 0: # if there are more columns in columnLine
+        for i in range(columnDelta):
+            ui.tableWidget.insertColumn(0)
+    elif columnDelta < 0: # if there are less columns in columnLine
+        for i in range(0 - columnDelta):
+            ui.tableWidget.removeColumn(0)
+    ui.tableWidget.clear() # reset header names
+    ui.tableWidget.setHorizontalHeaderLabels(columns)
+    ui.tableWidget.setVerticalHeaderLabels(rows)
+
+class Template(EditDialog):
+    def __init__(self, main_window, node):
+        self.setup('ui/template.ui', main_window, node)
+        tableSetup(self.ui)
+        self.ui.rowLine.setText(self.getData('_rows', node))
+        self.ui.columnLine.setText(self.getData('_columns', node))
+        setHeaders(self.dimensions(), self.ui)
+        self.ui.columnLine.editingFinished.connect(lambda:setHeaders(self.dimensions(), self.ui))
+        self.ui.rowLine.editingFinished.connect(lambda:setHeaders(self.dimensions(), self.ui))
+
+    def dimensions(self):
+        rows = self.ui.rowLine.text().split(', ')
+        columns = self.ui.columnLine.text().split(', ')
+        return (rows, columns)
+
+    def done(self):
+        name = self.ui.nameLine.text()
+        rows = self.ui.rowLine.text()
+        columns = self.ui.columnLine.text()
+        self.main.editAction({'_rows':rows, '_columns':columns}, name)
+class Table(Window):
+    def __init__(self, main_window, node):
+        self.setup('ui/table2.ui')
+        self.main = main_window
         self.dimensions = self.getDimensions(node)
         self.template = self.getData('_template', node)
+        tableSetup(self.ui)
         self.setTable()
+        self.setRules(node)
+        self.ui.buttonBox.accepted.connect(self.done)
+        self.ui.buttonBox.rejected.connect(self.ui.destroy) # you can use the hide method, but don't know the difference
+        self.ui.selectBtn.clicked.connect(self.selectTemplate)
+        self.ui.nameLine.setText(node._name)
+
+    def getData(self, attribute, node):
+        if attribute in node._data:
+            return node._data[attribute]
+        return ''
 
     def done(self):
         name = self.ui.nameLine.text()
         rows = ', '.join(self.dimensions[0])
         columns = ', '.join(self.dimensions[1])
         self.main.editAction({'_rows':rows, '_columns':columns, '_template':self.template}, name)
+        self.ui.destroy()
 
     def selectTemplate(self):
         self.selectWindow = SelectTemplate(self.main, self)
@@ -118,7 +152,7 @@ class Table(TableDialog):
         return tuple(data)
 
     def setTable(self):
-        self.setHeaders(self.dimensions)
+        setHeaders(self.dimensions, self.ui)
         self.ui.currentLbl.setText(self.template)
 
     def add(self):
@@ -145,25 +179,8 @@ class SelectTemplate(EditDialog):
             index = None
         self.tableDialog.selected(index)
 
-class Template(TableDialog):
-    def __init__(self, main_window, node):
-        self.setup('ui/template.ui', main_window, node)
-        self.ui.rowLine.setText(self.getData('_rows', node))
-        self.ui.columnLine.setText(self.getData('_columns', node))
-        self.setHeaders(self.dimensions())
-        self.ui.columnLine.editingFinished.connect(lambda:self.setHeaders(self.dimensions()))
-        self.ui.rowLine.editingFinished.connect(lambda:self.setHeaders(self.dimensions()))
 
-    def dimensions(self):
-        rows = self.ui.rowLine.text().split(', ')
-        columns = self.ui.columnLine.text().split(', ')
-        return (rows, columns)
 
-    def done(self):
-        name = self.ui.nameLine.text()
-        rows = self.ui.rowLine.text()
-        columns = self.ui.columnLine.text()
-        self.main.editAction({'_rows':rows, '_columns':columns}, name)
 
 class Symbol(EditDialog):
     def __init__(self, main_window, node):
