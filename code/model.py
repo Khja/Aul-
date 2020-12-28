@@ -60,12 +60,12 @@ class Node(object):
         return False
 
 class Model(QtCore.QAbstractItemModel):
-    def __init__(self, database, model): # Database object, model name in Database
+    def __init__(self, database, model_name): # Database object, model name in Database
         super(Model, self).__init__()
         self.headers = []
-        self._root = Node(model, {}, True, database) # Create root
+        self._root = Node(model_name, {}, True, database) # Create root
         self.nodes = {0:self._root} # id -> node
-        self._model = model
+        self._model = model_name
         self.load()
 
     def __repr__(self):
