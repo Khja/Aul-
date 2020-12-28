@@ -213,41 +213,58 @@ class Table(Window):
     def add(self):
         self.addDialog = AllRules(self.main, self)
 
-class AllRules(EditDialog):
+class AllRules(Window):
     def __init__(self, main_window, table_window):
-        self.setup('ui/allrules.ui', main_window)
+        self.setup('ui/allrules2.ui')
+        self.main = main_window
+        self.ui.treeView.setModel(self.main._master._rule)
+        self.ui.buttonBox.accepted.connect(self.done)
+        self.ui.buttonBox.accepted.connect(self.ui.destroy)
         self.tableDialog = table_window
-        self.model = self.main._master._rule
-        self.ui.treeView.setModel(self.model)
-class SelectTemplate(EditDialog):
-    def __init__(self, main_window, table_window):
-        self.setup('ui/selecttemplate.ui', main_window)
-        self.tableDialog = table_window
-        self.model = self.main._master._temp
-        self.ui.treeView.setModel(self.model)
 
     def done(self):
+        pass
+
+    def getSelection(self):
+        selected = None
         selection = self.ui.treeView.selectionModel().selectedRows()
         if len(selection) > 0:
-            index = selection[0]
-        else:
-            index = None
-        self.tableDialog.selected(index)
+            selected = selection[0]
+        return selected
 
+    def add(self):
+        self.addDialog = AddDialog('Rule', self)
 
+    def addAction(self, name, obj_type):
+        self.main._master.addChild(md.Node(name, {}), obj_type, '_rule', self.getSelection())
 
+    def editAction(self, new_data, new_name):
+        selected = self.getSelection()
+        self.main._master.editData(selected, '_rule', new_data, new_name)
 
-class Symbol(EditDialog):
-    def __init__(self, main_window, node):
-        self.setup('ui/symbol.ui', main_window, node)
-        self.ui.symbolLine.setText(self.getData('_symbol', node))
-        self.ui.regexLine.setText(self.getData('_regex', node))
+    def edit(self):
+        selected = self.getSelection()
+        if selected != None:
+            node = selected.internalPointer()
+            if node._type == 'Rule':
+                self.editDialog = Rule(self.main, self, node)
+
+class Rule(EditDialog):
+    def __init__(self, main_window, rule_window, node):
+        self.setup('ui/rules.ui', main_window)
+        self.ruleWindow = rule_window
+        self.ui.nameLine.setText(node._name)
+        for d in node._data:
+            widget = getattr(self.ui, f'{d[1:]}Line')
+            widget.setText(node._data[d])
 
     def done(self):
-        name = self.ui.nameLine.text()
-        symbol = self.ui.symbolLine.text()
-        regex = self.ui.regexLine.text()
-        self.main.editAction({'_symbol':symbol, '_regex':regex}, name)
+        new_name = self.ui.nameLine.text()
+        new_data = {}
+        for n in ('form', 'before', 'change', 'after', 'what'):
+            key = f'_{n}'
+            new_data[key] = getattr(self.ui, f'{n}Line').text()
+        self.ruleWindow.editAction(new_data, new_name)
 
 class MainWindow(Window):
     def __init__(self, app):
