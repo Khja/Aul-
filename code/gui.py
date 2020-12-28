@@ -27,9 +27,9 @@ class EditDialog(QtWidgets.QDialog):
         return ''
 
 class AddDialog(EditDialog):
-    def __init__(self, types, main_window):
+    def __init__(self, proper_type, main_window):
         self.setup('ui/add.ui', main_window)
-        self.ui.typeCombo.insertItem(0, types)
+        self.ui.typeCombo.insertItem(0, proper_type)
 
     def done(self):
         name, obj_type = self.ui.nameLine.text(), self.ui.typeCombo.currentText()
