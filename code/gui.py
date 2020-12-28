@@ -128,6 +128,19 @@ class Template(EditDialog):
         rows = self.ui.rowLine.text()
         columns = self.ui.columnLine.text()
         self.main.editAction({'_rows':rows, '_columns':columns}, name)
+
+class Window(QtWidgets.QMainWindow):
+    def setup(self, filename):
+        super(Window, self).__init__()
+        self.ui = loadUi(filename, self)
+        self.ui.menubar.triggered.connect(self.actionClicked)
+        self.ui.show()
+
+    def actionClicked(self, action): # connects each shortcut/menubar item to its respective function
+        name = action.text()
+        command = getattr(self, name.lower())
+        command()
+
 class Table(Window):
     def __init__(self, main_window, node):
         self.setup('ui/table2.ui')
@@ -217,10 +230,9 @@ class Symbol(EditDialog):
         regex = self.ui.regexLine.text()
         self.main.editAction({'_symbol':symbol, '_regex':regex}, name)
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(Window):
     def __init__(self, app):
-        super(MainWindow, self).__init__()
-        self.ui = loadUi('ui/test.ui', self)
+        self.setup('ui/test.ui')
         self._app = app
         self._master = ms.Master('data.test', self)
         self.moving = []
@@ -229,9 +241,6 @@ class MainWindow(QtWidgets.QMainWindow):
             model = getattr(self.ui, f'{t}TreeView')
             model.setModel(tree)
         self.ui.morpTreeView.doubleClicked.connect(self.move)
-        self.ui.menubar.triggered.connect(self.actionClicked) # connect action to menubar
-
-        self.ui.show()
 
     def currentTree(self):
         tab = self.ui.tabWidget.currentIndex()
@@ -299,12 +308,6 @@ class MainWindow(QtWidgets.QMainWindow):
         view = getattr(self.ui, f'{tree[1:]}TreeView')
         selectionModel = view.selectionModel()
         selectionModel.clear()
-
-    def actionClicked(self, action):
-        """This connects each shortcut/menbar item to its respective function"""
-        name = action.text()
-        command = getattr(self, name.lower())
-        command()
 
 if __name__ == '__main__':
     import sys
