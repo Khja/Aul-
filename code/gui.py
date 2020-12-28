@@ -57,7 +57,33 @@ class Note(EditDialog):
         name = self.ui.nameLine.text()
         self.main.editAction({'_text': text}, name)
 
+class SelectTemplate(EditDialog):
+    def __init__(self, main_window, table_window):
+        self.setup('ui/selecttemplate.ui', main_window)
+        self.tableDialog = table_window
+        self.model = self.main._master._temp
+        self.ui.treeView.setModel(self.model)
+
+    def done(self):
+        selection = self.ui.treeView.selectionModel().selectedRows()
+        if len(selection) > 0:
+            index = selection[0]
+        else:
+            index = None
+        self.tableDialog.selected(index)
+
+class Symbol(EditDialog):
     def __init__(self, main_window, node):
+        self.setup('ui/symbol.ui', main_window, node)
+        self.ui.symbolLine.setText(self.getData('_symbol', node))
+        self.ui.regexLine.setText(self.getData('_regex', node))
+
+    def done(self):
+        name = self.ui.nameLine.text()
+        symbol = self.ui.symbolLine.text()
+        regex = self.ui.regexLine.text()
+        self.main.editAction({'_symbol':symbol, '_regex':regex}, name)
+
 def tableSetup(ui):
     ui.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
     ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
