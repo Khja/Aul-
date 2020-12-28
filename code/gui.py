@@ -57,10 +57,7 @@ class Note(EditDialog):
         name = self.ui.nameLine.text()
         self.main.editAction({'_text': text}, name)
 
-class Table(TableDialog):
     def __init__(self, main_window, node):
-        self.setup('ui/table.ui', main_window, node)
-        self.ui.selectBtn.clicked.connect(self.selectTemplate)
 def tableSetup(ui):
     ui.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
     ui.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
