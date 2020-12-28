@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="6" column="1">
-    <widget class="QLineEdit" name="ruleIfAfterLine"/>
+    <widget class="QLineEdit" name="beforeLine"/>
    </item>
    <item row="13" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -28,68 +28,68 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QLabel" name="ruleNameLbl">
+    <widget class="QLabel" name="nameLbl">
      <property name="text">
       <string>Name:</string>
      </property>
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="ruleChangeLbl">
+    <widget class="QLabel" name="changeLbl">
      <property name="text">
       <string>Change:</string>
      </property>
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLineEdit" name="ruleFormLine"/>
+    <widget class="QLineEdit" name="formLine"/>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="Line" name="ruleLine">
+    <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QLabel" name="ruleBeforeLbl">
+    <widget class="QLabel" name="beforeLbl">
      <property name="text">
       <string>After:</string>
      </property>
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="ruleWhatLbl">
+    <widget class="QLabel" name="whatLbl">
      <property name="text">
       <string>What:</string>
      </property>
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="ruleFormLbl">
+    <widget class="QLabel" name="formLbl">
      <property name="text">
       <string>Form:</string>
      </property>
     </widget>
    </item>
    <item row="6" column="0">
-    <widget class="QLabel" name="ruleAfterLbl">
+    <widget class="QLabel" name="afterLbl">
      <property name="text">
       <string>Before:</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="ruleNameLine"/>
+    <widget class="QLineEdit" name="nameLine"/>
    </item>
    <item row="7" column="1">
-    <widget class="QLineEdit" name="ruleChangeLine"/>
+    <widget class="QLineEdit" name="changeLine"/>
    </item>
    <item row="5" column="1">
-    <widget class="QLineEdit" name="ruleWhatLine"/>
+    <widget class="QLineEdit" name="whatLine"/>
    </item>
    <item row="4" column="1">
-    <widget class="QLineEdit" name="ruleIsBeforeLine"/>
+    <widget class="QLineEdit" name="afterLine"/>
    </item>
   </layout>
  </widget>
