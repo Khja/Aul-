@@ -177,6 +177,13 @@ class Table(Window):
             self.template = node._name
             self.setTable()
 
+    def getSelection(self):
+        selected = None
+        selection = self.ui.treeView.selectionModel().selectedRows()
+        if len(selection) > 0:
+            selected = selection[0]
+        return selected
+
     def getDimensions(self, node):
         data = []
         for d in ('_rows', '_columns'):
@@ -198,6 +205,7 @@ class Table(Window):
         else:
             self.main._master.table_rules.append(model_name)
             self.ruleModel = md.Model(self.main._master._database, model_name)
+            self.model_name = model_name
             setattr(self.main._master, model_name, self.ruleModel)
             if '_rows' in node._data and '_columns' in node._data:
                 rows = node._data['_rows'].split(', ')
@@ -213,6 +221,13 @@ class Table(Window):
     def add(self):
         self.addDialog = AllRules(self.main, self)
 
+    def addRule(self, name, original_id, original_node):
+        selected = self.getSelection()
+        node = md.Node(name, {'_original':original_id})
+        node.original = original_node
+        original_node.copies.append(node)
+        self.main._master.addChild(node, 'Rule', self.model_name, selected)
+
 class AllRules(Window):
     def __init__(self, main_window, table_window):
         self.setup('ui/allrules2.ui')
@@ -223,7 +238,13 @@ class AllRules(Window):
         self.tableDialog = table_window
 
     def done(self):
-        pass
+        selected = self.getSelection()
+        if selected != None:
+            node = selected.internalPointer()
+            name = node._name
+            original_id = node._id
+            original_node = node
+            self.tableDialog.addRule(name, original_id, original_node)
 
     def getSelection(self):
         selected = None
@@ -235,8 +256,14 @@ class AllRules(Window):
     def add(self):
         self.addDialog = AddDialog('Rule', self)
 
+    def delete(self):
+        selected = self.getSelection()
+        self.main._master.removeChild(selected, self.tableDialog.model_name)
+
     def addAction(self, name, obj_type):
-        self.main._master.addChild(md.Node(name, {}), obj_type, '_rule', self.getSelection())
+        node = md.Node(name, {})
+        node.copies = []
+        self.main._master.addChild(node, obj_type, '_rule', self.getSelection())
 
     def editAction(self, new_data, new_name):
         selected = self.getSelection()
@@ -248,6 +275,12 @@ class AllRules(Window):
             node = selected.internalPointer()
             if node._type == 'Rule':
                 self.editDialog = Rule(self.main, self, node)
+
+    def undo(self):
+        self.main.undo()
+
+    def redo(self):
+        self.main.redo()
 
 class Rule(EditDialog):
     def __init__(self, main_window, rule_window, node):
