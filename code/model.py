@@ -1,5 +1,5 @@
 from PySide2 import QtCore
-import data
+import data, changer
 
 class Node(object):
     def __init__(self, name, data, root=False, database=None):
@@ -58,6 +58,21 @@ class Node(object):
                 return child
             return True
         return False
+
+class RuleNode(Node):
+    def apply(self, word):
+        all_values = True
+        i, values = 0, []
+        attributes = ('_form', '_before', '_what', '_after', '_change')
+        while all_values:
+            if attributes[i] in self._data:
+                values.append(self._data[attributes[i]])
+            else:
+                all_values = False
+            i += 1
+        if all_values is True:
+            return changer.change(values, word)
+        return ''
 
 class Model(QtCore.QAbstractItemModel):
     def __init__(self, database, model_name): # Database object, model name in Database
